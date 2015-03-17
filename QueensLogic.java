@@ -13,6 +13,7 @@ public class QueensLogic {
     private int x = 0;
     private int y = 0;
     private int[][] board;
+    BDDFactory fact;
 
 
     public QueensLogic() {
@@ -23,8 +24,34 @@ public class QueensLogic {
         this.x = size;
         this.y = size;
         this.board = new int[x][y];
+        
+        for(int i = 0 ; i < size ; i++)
+        	for(int j = 0 ; j < size ; j++)
+        		this.board[i][j] = 0;
+        
+        constructBDD();
+        addNQueensRules();
+        calculateValidDomains();
     }
 
+    private void constructBDD()
+    {
+    	this.fact = JFactory.init(2000000,200000);
+		fact.setVarNum(x*x);
+		
+//		BDD True = fact.one();
+//		BDD False = fact.zero();
+    }
+    
+    private void addNQueensRules()
+    {
+    	
+    }
+    
+    private void calculateValidDomains()
+    {
+    	
+    }
    
     public int[][] getGameBoard() {
         return board;
@@ -38,8 +65,15 @@ public class QueensLogic {
         
         board[column][row] = 1;
         
-        // put some logic here..
+        recalculateBoard(column, row);
       
         return true;
     }
+    
+    private void recalculateBoard(int column, int row)
+    {
+    	
+    }
+    
+    
 }

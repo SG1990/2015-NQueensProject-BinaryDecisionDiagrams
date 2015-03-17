@@ -50,7 +50,11 @@ public class BDDExamples {
 		
 		BDD b_replaced = existed.replace(replacement);
 		
-		
+		// Exist. should be tautology
+		System.out.println("Existiential quant. cause taut: " + existed.isOne());
+				
+	    // Restriction shoule be unsat:
+		System.out.println("Restriction caused unsat: " + restricted.isZero());
 	}
 
 }
