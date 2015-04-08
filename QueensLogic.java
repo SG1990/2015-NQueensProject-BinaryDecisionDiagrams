@@ -34,18 +34,42 @@ public class QueensLogic {
         calculateValidDomains();
     }
 
-    private void constructBDD()
-    {
+    private void constructBDD() {
     	this.fact = JFactory.init(2000000,200000);
 		fact.setVarNum(x*x);
-		
-//		BDD True = fact.one();
-//		BDD False = fact.zero();
     }
     
-    private void addNQueensRules()
-    {
+    private BDD addNQueensRules() {
+    	BDD rowRules = fact.one();			//TODO: Find out how to 
+    	BDD columnRules = fact.one();
+    	BDD diagonalRules = fact.one();
+    	int noOfVars = x*x;
     	
+    	for(int i = 0 ; i < noOfVars ; i++) { // iteration over all variables from x0 to x_(n-1)    		
+    		//row rules
+    		int col = (int) Math.floor(i / x);
+    		BDD rowRule = fact.one();
+    		for(int j = 0 ; j < x ; j++) {
+    			int varNo = i + (j - col);
+    			
+    			if (varNo == i)
+    				rowRule = rowRule.and(fact.ithVar(varNo));
+    			else rowRule = rowRule.and(fact.nithVar(varNo));
+    		}
+    		
+    		if((i % x) == (x - 1)) {
+    			rowRules = rowRules.and(rowRule);
+    			rowRule = fact.one();
+    		}
+    		
+    		//column rules ???
+    		
+    		//diagonal rules ???
+    		
+    	}   
+    	
+    	BDD full = rowRules.and(columnRules).and(diagonalRules);
+    	return full;
     }
     
     private void calculateValidDomains()
@@ -72,7 +96,7 @@ public class QueensLogic {
     
     private void recalculateBoard(int column, int row)
     {
-    	
+    	//restrict
     }
     
     
