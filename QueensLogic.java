@@ -50,19 +50,29 @@ public class QueensLogic {
     	BDD diaRulesTopBDD = fact.one();
     	BDD diaRulesBottomBDD = fact.one();
     	
-    	BDD rowRules[] = new BDD[x];
+    	BDD rowRules[] = new BDD[x];		
     	BDD colRules[] = new BDD[x];
     	BDD diaRulesTop[] = new BDD[2*x - 1];
     	BDD diaRulesBottom[] = new BDD[2*x - 1];
+    	
+    	for(int i = 0 ; i < x ; i++){
+    		rowRules[i] = fact.zero();
+    		colRules[i] = fact.zero();
+    	}
+    	
+    	for(int i = 0 ; i < 2*x - 1 ; i++){
+    		diaRulesTop[i] = fact.zero();
+    		diaRulesBottom[i] = fact.zero();
+    	}
     	   	
     	for(int i = 0 ; i < noOfVars ; i++) { // iteration over all variables from x0 to x_(n-1)    		
     		int row = (int) Math.floor(i / x);
     		int col = i % x ;
     		int minDimension = Math.min(col, row);
-    		BDD rowVarRule = fact.one();;
-    		BDD colVarRule = fact.one();;
-    		BDD diaVarRuleTop = fact.one();;
-    		BDD diaVarRuleBottom = fact.one();;
+    		BDD rowVarRule = fact.one();
+    		BDD colVarRule = fact.one();
+    		BDD diaVarRuleTop = fact.one();
+    		BDD diaVarRuleBottom = fact.one();
     		
     		for(int j = 0 ; j < x ; j++) {
     			
@@ -87,7 +97,7 @@ public class QueensLogic {
     			}    			
     			
     			//diagonal from bottom rules
-    			varNo = i + (j - minDimension) - (x * (j - minDimension)); 
+    			varNo = i - (j - minDimension) + (x * (j - minDimension)); 
     			if(col - (j - minDimension) >= 0 && row + (j - minDimension) >= 0 && col - (j - minDimension) < x && row + (j - minDimension) < x) {
     				if (varNo == i)
     					diaVarRuleBottom = diaVarRuleBottom.and(fact.ithVar(varNo));
@@ -97,7 +107,7 @@ public class QueensLogic {
     		
     		rowRules[row] = rowRules[row].or(rowVarRule);   		
     		colRules[col] = colRules[col].or(colVarRule);  
-    		diaRulesTop[row - col + (2*x - 1)] = diaRulesTop[row - col + (2*x - 1)].or(diaVarRuleTop);   
+    		diaRulesTop[row - col + (x - 1)] = diaRulesTop[row - col + (x - 1)].or(diaVarRuleTop);   
     		diaRulesBottom[row + col] = diaRulesBottom[row + col].or(diaVarRuleBottom);   
     	}   
     	
