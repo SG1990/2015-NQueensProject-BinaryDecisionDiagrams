@@ -40,7 +40,7 @@ public class QueensLogic {
     private BDD addNQueensRules() {
     	int noOfVars = x*x;
     	
-    	BDD rowRulesBDD = fact.one();			//TODO: Find out how to initialise empty expressions !!!
+    	BDD rowRulesBDD = fact.one();			//TODO: Find out how to initialise empty expressions !!! NULL OR TRUE (fact.one()) ???
     	BDD columnRulesBDD = fact.one();
     	BDD diagonalRulesBDD = fact.one();
     	
@@ -51,21 +51,26 @@ public class QueensLogic {
     	for(int i = 0 ; i < noOfVars ; i++) { // iteration over all variables from x0 to x_(n-1)    		
     		int row = (int) Math.floor(i / x);
     		int col = i % x ;
+    		BDD rowVarRule = null;
+    		BDD colVarRule = null;
     		
-    		// **ROW RULES** //
-    		BDD varRule = null;
+    		// **ROW AND COL RULES** //
     		for(int j = 0 ; j < x ; j++) {
-    			int varNo = i + (j - col); 	
     			
-    			if (varNo == i)
-    				varRule = varRule.and(fact.ithVar(varNo));
-    			else varRule = varRule.and(fact.nithVar(varNo));
-    		}
-    		
-    		rowRules[row] = rowRules[row].or(varRule);
-    		varRule = fact.one();	
-    		
-    		// **COLUMN RULES** //
+    			// row rules
+    			int rowVarNo = i + (j - col);     			
+    			if (rowVarNo == i)
+    				rowVarRule = rowVarRule.and(fact.ithVar(rowVarNo));
+    			else rowVarRule = rowVarRule.and(fact.nithVar(rowVarNo));
+    			
+    			// col rules
+    			int colVarNo = i + (x * (j - row)); 	    			
+    			if (colVarNo == i)
+    				colVarRule = colVarRule.and(fact.ithVar(colVarNo));
+    			else colVarRule = colVarRule.and(fact.nithVar(colVarNo));
+    		}    		
+    		rowRules[row] = rowRules[row].or(rowVarRule);   		
+    		colRules[col] = colRules[col].or(colVarRule);
     		
     		// **DIAGONALS RULES** //
     		
