@@ -5,8 +5,6 @@
  * @author Stavros Amanatidis
  *
  */
-import java.util.*;
-
 import net.sf.javabdd.*;
 
 public class QueensLogic {
@@ -40,36 +38,45 @@ public class QueensLogic {
     }
     
     private BDD addNQueensRules() {
-    	BDD rowRules = fact.one();			//TODO: Find out how to 
-    	BDD columnRules = fact.one();
-    	BDD diagonalRules = fact.one();
     	int noOfVars = x*x;
     	
+    	BDD rowRulesBDD = fact.one();			//TODO: Find out how to initialise empty expressions !!!
+    	BDD columnRulesBDD = fact.one();
+    	BDD diagonalRulesBDD = fact.one();
+    	
+    	BDD rowRules[] = new BDD[x];
+    	BDD colRules[] = new BDD[x];
+    	BDD diaRules[] = new BDD[x];
+    	   	
     	for(int i = 0 ; i < noOfVars ; i++) { // iteration over all variables from x0 to x_(n-1)    		
-    		//row rules
-    		int col = (int) Math.floor(i / x);
-    		BDD rowRule = fact.one();
+    		int row = (int) Math.floor(i / x);
+    		int col = i % x ;
+    		
+    		// **ROW RULES** //
+    		BDD varRule = null;
     		for(int j = 0 ; j < x ; j++) {
-    			int varNo = i + (j - col);
+    			int varNo = i + (j - col); 	
     			
     			if (varNo == i)
-    				rowRule = rowRule.and(fact.ithVar(varNo));
-    			else rowRule = rowRule.and(fact.nithVar(varNo));
+    				varRule = varRule.and(fact.ithVar(varNo));
+    			else varRule = varRule.and(fact.nithVar(varNo));
     		}
     		
-    		if((i % x) == (x - 1)) {
-    			rowRules = rowRules.and(rowRule);
-    			rowRule = fact.one();
-    		}
+    		rowRules[row] = rowRules[row].or(varRule);
+    		varRule = fact.one();	
     		
-    		//column rules ???
+    		// **COLUMN RULES** //
     		
-    		//diagonal rules ???
+    		// **DIAGONALS RULES** //
     		
     	}   
     	
-    	BDD full = rowRules.and(columnRules).and(diagonalRules);
-    	return full;
+    	for(BDD rule : rowRules) {
+    		rowRulesBDD = rowRulesBDD.and(rule);
+    	}
+    	
+    	BDD fullRules = rowRulesBDD.and(columnRulesBDD).and(diagonalRulesBDD);
+    	return fullRules;
     }
     
     private void calculateValidDomains()
