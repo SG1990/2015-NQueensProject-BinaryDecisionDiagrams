@@ -13,6 +13,7 @@ public class QueensLogic {
     private int[][] board;
     BDDFactory fact;
     BDD fullBDD;
+    BDD currentRestriction;
 
     public QueensLogic() {
        //constructor
@@ -114,17 +115,32 @@ public class QueensLogic {
     	BDD restriction = null;
     	for(int i = 0 ; i < x ; i++)
     		for (int j = 0 ; j < x ; j++) {
-    			if(board[i][j] == 1)
-    			{
+    			if(board[i][j] == 1) {
     				restriction = restriction.and(fact.ithVar((i * x) + j));
     			}
     			
-    			fullBDD.restrict(restriction);
+    			currentRestriction = restriction;
+    			fullBDD = fullBDD.restrict(restriction);
     		}
     }
     
-    private void calculateValidDomains()
-    {
+    private int[][] calculateValidDomains() {
+    	int[][] vector = new int[x*x][2];
+    	
+    	for(int i = 0 ; i < x*x ; i++) 	{
+    		BDD restricted = fullBDD.restrict(currentRestriction.and(fact.ithVar(i)));
+    		if(!restricted.isZero()) vector[i][0] = 1;
+    		else vector[i][0] = 0;
+    		
+    		restricted = fullBDD.restrict(currentRestriction.and(fact.nithVar(i)));
+    		if(!restricted.isZero()) vector[i][1] = 1;
+    		else vector[i][1] = 0;
+    	}
+    	
+    	return vector;
+    }
+    
+    private void updateBoard(int[][] vector){
     	
     }
 
@@ -134,7 +150,9 @@ public class QueensLogic {
             return true;
         }
         
-        
+        board[column][row] = 1;
+        restrictBDD();
+        updateBoard(calculateValidDomains());
       
         return true;
     }
