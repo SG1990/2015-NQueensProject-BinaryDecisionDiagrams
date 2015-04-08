@@ -17,6 +17,10 @@ public class QueensLogic {
     public QueensLogic() {
        //constructor
     }
+    
+    public int[][] getGameBoard() {
+        return board;
+    }
 
     public void initializeGame(int size) {
         this.x = size;
@@ -29,7 +33,7 @@ public class QueensLogic {
         
         constructBDD();
         addNQueensRules();
-        calculateValidDomains();
+        restrictBDD();
     }
 
     private void constructBDD() {
@@ -42,7 +46,8 @@ public class QueensLogic {
     	
     	BDD rowRulesBDD = fact.one();			//TODO: Find out how to initialise empty expressions !!! NULL OR TRUE (fact.one()) ???
     	BDD colRulesBDD = fact.one();
-    	BDD diaRulesBDD = fact.one();
+    	BDD diaRulesTopBDD = fact.one();
+    	BDD diaRulesBottomBDD = fact.one();
     	
     	BDD rowRules[] = new BDD[x];
     	BDD colRules[] = new BDD[x];
@@ -58,7 +63,6 @@ public class QueensLogic {
     		BDD diaVarRuleTop = fact.one();;
     		BDD diaVarRuleBottom = fact.one();;
     		
-    		// **ROW AND COL RULES** //
     		for(int j = 0 ; j < x ; j++) {
     			
     			// row rules
@@ -99,18 +103,29 @@ public class QueensLogic {
     	for(int i = 0 ; i < x ; i++) {
     		rowRulesBDD = rowRulesBDD.and(rowRules[i]);
     		colRulesBDD = colRulesBDD.and(colRules[i]);
+    		diaRulesTopBDD = diaRulesTopBDD.and(diaRulesTop[i]);
+    		diaRulesBottomBDD = diaRulesBottomBDD.and(diaRulesBottom[i]);
     	}
     	
-    	fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesBDD);
+    	fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesTopBDD).and(diaRulesBottomBDD);
+    }
+    
+    private void restrictBDD() {
+    	BDD restriction = null;
+    	for(int i = 0 ; i < x ; i++)
+    		for (int j = 0 ; j < x ; j++) {
+    			if(board[i][j] == 1)
+    			{
+    				restriction = restriction.and(fact.ithVar((i * x) + j));
+    			}
+    			
+    			fullBDD.restrict(restriction);
+    		}
     }
     
     private void calculateValidDomains()
     {
     	
-    }
-   
-    public int[][] getGameBoard() {
-        return board;
     }
 
     public boolean insertQueen(int column, int row) {
@@ -119,17 +134,8 @@ public class QueensLogic {
             return true;
         }
         
-        board[column][row] = 1;
         
-        recalculateBoard(column, row);
       
         return true;
     }
-    
-    private void recalculateBoard(int column, int row)
-    {
-    	//restrict
-    }
-    
-    
 }
