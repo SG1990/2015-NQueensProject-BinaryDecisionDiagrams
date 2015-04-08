@@ -12,7 +12,7 @@ public class QueensLogic {
     private int y = 0;
     private int[][] board;
     BDDFactory fact;
-
+    BDD fullBDD;
 
     public QueensLogic() {
        //constructor
@@ -37,51 +37,71 @@ public class QueensLogic {
 		fact.setVarNum(x*x);
     }
     
-    private BDD addNQueensRules() {
+    private void addNQueensRules() {
     	int noOfVars = x*x;
     	
     	BDD rowRulesBDD = fact.one();			//TODO: Find out how to initialise empty expressions !!! NULL OR TRUE (fact.one()) ???
-    	BDD columnRulesBDD = fact.one();
-    	BDD diagonalRulesBDD = fact.one();
+    	BDD colRulesBDD = fact.one();
+    	BDD diaRulesBDD = fact.one();
     	
     	BDD rowRules[] = new BDD[x];
     	BDD colRules[] = new BDD[x];
-    	BDD diaRules[] = new BDD[x];
+    	BDD diaRulesTop[] = new BDD[2*x - 1];
+    	BDD diaRulesBottom[] = new BDD[2*x - 1];
     	   	
     	for(int i = 0 ; i < noOfVars ; i++) { // iteration over all variables from x0 to x_(n-1)    		
     		int row = (int) Math.floor(i / x);
     		int col = i % x ;
-    		BDD rowVarRule = null;
-    		BDD colVarRule = null;
+    		int minDimension = Math.min(col, row);
+    		BDD rowVarRule = fact.one();;
+    		BDD colVarRule = fact.one();;
+    		BDD diaVarRuleTop = fact.one();;
+    		BDD diaVarRuleBottom = fact.one();;
     		
     		// **ROW AND COL RULES** //
     		for(int j = 0 ; j < x ; j++) {
     			
     			// row rules
-    			int rowVarNo = i + (j - col);     			
-    			if (rowVarNo == i)
-    				rowVarRule = rowVarRule.and(fact.ithVar(rowVarNo));
-    			else rowVarRule = rowVarRule.and(fact.nithVar(rowVarNo));
+    			int varNo = i + (j - col);     			
+    			if (varNo == i)
+    				rowVarRule = rowVarRule.and(fact.ithVar(varNo));
+    			else rowVarRule = rowVarRule.and(fact.nithVar(varNo));
     			
     			// col rules
-    			int colVarNo = i + (x * (j - row)); 	    			
-    			if (colVarNo == i)
-    				colVarRule = colVarRule.and(fact.ithVar(colVarNo));
-    			else colVarRule = colVarRule.and(fact.nithVar(colVarNo));
-    		}    		
+    			varNo = i + (x * (j - row)); 	    			
+    			if (varNo == i)
+    				colVarRule = colVarRule.and(fact.ithVar(varNo));
+    			else colVarRule = colVarRule.and(fact.nithVar(varNo));
+    			
+    			// diagonal from top rules
+    			varNo = i + (j - minDimension) + (x * (j - minDimension));     			  
+    			if(col - (j - minDimension) >= 0 && row - (j - minDimension) >= 0 && col - (j - minDimension) < x && row - (j - minDimension) < x) {
+    				if (varNo == i)
+    					diaVarRuleTop = diaVarRuleTop.and(fact.ithVar(varNo));
+        			else diaVarRuleTop = diaVarRuleTop.and(fact.nithVar(varNo));
+    			}    			
+    			
+    			//diagonal from bottom rules
+    			varNo = i + (j - minDimension) - (x * (j - minDimension)); 
+    			if(col - (j - minDimension) >= 0 && row + (j - minDimension) >= 0 && col - (j - minDimension) < x && row + (j - minDimension) < x) {
+    				if (varNo == i)
+    					diaVarRuleBottom = diaVarRuleBottom.and(fact.ithVar(varNo));
+        			else diaVarRuleBottom = diaVarRuleBottom.and(fact.nithVar(varNo));
+    			}
+    		}   
+    		
     		rowRules[row] = rowRules[row].or(rowVarRule);   		
-    		colRules[col] = colRules[col].or(colVarRule);
-    		
-    		// **DIAGONALS RULES** //
-    		
+    		colRules[col] = colRules[col].or(colVarRule);  
+    		diaRulesTop[row - col + (2*x - 1)] = diaRulesTop[row - col + (2*x - 1)].or(diaVarRuleTop);   
+    		diaRulesBottom[row + col] = diaRulesBottom[row + col].or(diaVarRuleBottom);   
     	}   
     	
-    	for(BDD rule : rowRules) {
-    		rowRulesBDD = rowRulesBDD.and(rule);
+    	for(int i = 0 ; i < x ; i++) {
+    		rowRulesBDD = rowRulesBDD.and(rowRules[i]);
+    		colRulesBDD = colRulesBDD.and(colRules[i]);
     	}
     	
-    	BDD fullRules = rowRulesBDD.and(columnRulesBDD).and(diagonalRulesBDD);
-    	return fullRules;
+    	fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesBDD);
     }
     
     private void calculateValidDomains()
