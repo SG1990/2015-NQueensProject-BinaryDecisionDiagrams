@@ -126,6 +126,9 @@ public class QueensLogic {
     
     private int[][] calculateValidDomains() {
     	int[][] vector = new int[x*x][2];
+    	for(int i = 0 ; i < x ; i++)
+        	for(int j = 0 ; j < 2 ; j++)
+        		vector[i][j] = 0;
     	
     	for(int i = 0 ; i < x*x ; i++) 	{
     		BDD restricted = fullBDD.restrict(currentRestriction.and(fact.ithVar(i)));
@@ -140,12 +143,16 @@ public class QueensLogic {
     	return vector;
     }
     
-    private void updateBoard(int[][] vector){
-    	
+    private void updateBoard(int[][] vector) {
+    	for(int i = 0 ; i < x*x ; i++) {
+    		if (vector[i][0] == 1 && vector[i][1] == 0)
+    			board[i % x][(int) Math.floor(i / x)] = 1;
+    		else if (vector[i][0] == 0 && vector[i][1] == 1)
+    			board[i % x][(int) Math.floor(i / x)] = -1;
+    	}
     }
 
     public boolean insertQueen(int column, int row) {
-
         if (board[column][row] == -1 || board[column][row] == 1) {
             return true;
         }
