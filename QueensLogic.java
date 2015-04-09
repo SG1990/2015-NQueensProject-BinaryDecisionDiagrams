@@ -75,6 +75,8 @@ public class QueensLogic {
     		BDD colVarRule = fact.one();
     		BDD diaVarRuleTop = fact.one();
     		BDD diaVarRuleBottom = fact.one();
+    		BDD diaVarRuleTopZeroed = fact.one();
+    		BDD diaVarRuleBottomZeroed = fact.one();
     		
     		for(int j = 0 ; j < x ; j++) {
     			
@@ -96,6 +98,8 @@ public class QueensLogic {
     				if (varNo == i)
     					diaVarRuleTop = diaVarRuleTop.and(fact.ithVar(varNo));
         			else diaVarRuleTop = diaVarRuleTop.and(fact.nithVar(varNo));
+    				
+    				diaVarRuleTopZeroed = diaVarRuleTopZeroed.and(fact.nithVar(varNo));
     			}    			
     			
     			//diagonal from bottom rules
@@ -104,13 +108,17 @@ public class QueensLogic {
     				if (varNo == i)
     					diaVarRuleBottom = diaVarRuleBottom.and(fact.ithVar(varNo));
         			else diaVarRuleBottom = diaVarRuleBottom.and(fact.nithVar(varNo));
+    				
+    				diaVarRuleBottomZeroed = diaVarRuleBottomZeroed.and(fact.nithVar(varNo));
     			}
     		}   
     		
     		rowRules[row] = rowRules[row].or(rowVarRule);   		
     		colRules[col] = colRules[col].or(colVarRule);  
     		diaRulesTop[row - col + x - 1] = diaRulesTop[row - col + x - 1].or(diaVarRuleTop);   
+    		diaRulesTop[row - col + x - 1] = diaRulesTop[row - col + x - 1].or(diaVarRuleTopZeroed);  
     		diaRulesBottom[row + col] = diaRulesBottom[row + col].or(diaVarRuleBottom);   
+    		diaRulesBottom[row + col] = diaRulesBottom[row + col].or(diaVarRuleBottomZeroed);   
     	}   
     	
     	for(int i = 0 ; i < x ; i++) {
@@ -118,15 +126,14 @@ public class QueensLogic {
     		colRulesBDD = colRulesBDD.and(colRules[i]);
     	}
     	
-    	for(int i = 0 ; i < 2*x - 1; i++) {
+    	for(int i = 0 ; i < 2*x -1; i++) {
     		diaRulesTopBDD = diaRulesTopBDD.and(diaRulesTop[i]);
     		diaRulesBottomBDD = diaRulesBottomBDD.and(diaRulesBottom[i]);
     	}
     	
-    	fullBDD = rowRulesBDD.and(colRulesBDD);//.and(diaRulesTopBDD);.and(diaRulesBottomBDD);
-    	//fullBDD = diaRulesTopBDD.and(diaRulesBottomBDD);
-    	System.out.println("Existiential BDD is a tautology: " + fullBDD.isOne());
-    	System.out.println("Existiential BDD is unsatisfiable: " + fullBDD.isZero());
+    	fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesTopBDD).and(diaRulesBottomBDD);
+    	System.out.println("BDD is a tautology: " + fullBDD.isOne());
+    	System.out.println("BDD is unsatisfiable: " + fullBDD.isZero());
     }
     
     private void restrictBDD() {
@@ -164,11 +171,16 @@ public class QueensLogic {
     	changedWhileUpdating = false;
     	for(int i = 0 ; i < x*x ; i++) {
     		if (vector[i][0] == 1 && vector[i][1] == 0) {
-    			//board[i % x][(int) Math.floor(i / x)] = 1;
+    			board[i % x][(int) Math.floor(i / x)] = 1;
     			changedWhileUpdating = true;
     		}
     		else if (vector[i][0] == 0 && vector[i][1] == 1)
     			board[i % x][(int) Math.floor(i / x)] = -1;
+    	}
+    	
+    	if(changedWhileUpdating) {
+    		restrictBDD();
+    		updateBoard(calculateValidDomains());
     	}
     }
 
@@ -180,12 +192,6 @@ public class QueensLogic {
         board[column][row] = 1;
         restrictBDD();
         updateBoard(calculateValidDomains());
-        
-//        while(changedWhileUpdating)
-//        {
-//        	restrictBDD();
-//            updateBoard(calculateValidDomains());
-//        }
       
         return true;
     }
