@@ -69,6 +69,7 @@ public class QueensLogic {
     		int row = (int) Math.floor(i / x);
     		int col = i % x ;
     		int minDimension = Math.min(col, row);
+    		int maxDimension = Math.max(col, row);
     		BDD rowVarRule = fact.one();
     		BDD colVarRule = fact.one();
     		BDD diaVarRuleTop = fact.one();
@@ -90,15 +91,15 @@ public class QueensLogic {
     			
     			// diagonal from top rules
     			varNo = i + (j - minDimension) + (x * (j - minDimension));     			  
-    			if(col - (j - minDimension) >= 0 && row - (j - minDimension) >= 0 && col - (j - minDimension) < x && row - (j - minDimension) < x) {
+    			if(maxDimension + (j - minDimension) < x) {
     				if (varNo == i)
     					diaVarRuleTop = diaVarRuleTop.and(fact.ithVar(varNo));
         			else diaVarRuleTop = diaVarRuleTop.and(fact.nithVar(varNo));
     			}    			
     			
     			//diagonal from bottom rules
-    			varNo = i - (j - minDimension) + (x * (j - minDimension)); 
-    			if(col - (j - minDimension) >= 0 && row + (j - minDimension) >= 0 && col - (j - minDimension) < x && row + (j - minDimension) < x) {
+    			varNo = i - (j - row) + (x * (j - row)); 
+    			if(maxDimension - (j - minDimension) < x && maxDimension - (j - minDimension) >= 0) {
     				if (varNo == i)
     					diaVarRuleBottom = diaVarRuleBottom.and(fact.ithVar(varNo));
         			else diaVarRuleBottom = diaVarRuleBottom.and(fact.nithVar(varNo));
