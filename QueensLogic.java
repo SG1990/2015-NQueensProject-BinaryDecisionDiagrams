@@ -116,12 +116,15 @@ public class QueensLogic {
     	for(int i = 0 ; i < x ; i++) {
     		rowRulesBDD = rowRulesBDD.and(rowRules[i]);
     		colRulesBDD = colRulesBDD.and(colRules[i]);
+    	}
+    	
+    	for(int i = 0 ; i < 2*x - 1; i++) {
     		diaRulesTopBDD = diaRulesTopBDD.and(diaRulesTop[i]);
     		diaRulesBottomBDD = diaRulesBottomBDD.and(diaRulesBottom[i]);
     	}
     	
-    	//fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesTopBDD).and(diaRulesBottomBDD);
-    	fullBDD = diaRulesBottomBDD;
+    	fullBDD = rowRulesBDD.and(colRulesBDD);//.and(diaRulesTopBDD);.and(diaRulesBottomBDD);
+    	//fullBDD = diaRulesTopBDD.and(diaRulesBottomBDD);
     	System.out.println("Existiential BDD is a tautology: " + fullBDD.isOne());
     	System.out.println("Existiential BDD is unsatisfiable: " + fullBDD.isZero());
     }
