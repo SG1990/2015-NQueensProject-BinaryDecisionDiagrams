@@ -14,6 +14,7 @@ public class QueensLogic {
     BDDFactory fact;
     BDD fullBDD;
     BDD currentRestriction;
+    boolean changedWhileUpdating = false;
 
     public QueensLogic() {
        //constructor
@@ -108,7 +109,7 @@ public class QueensLogic {
     		
     		rowRules[row] = rowRules[row].or(rowVarRule);   		
     		colRules[col] = colRules[col].or(colVarRule);  
-    		diaRulesTop[row - col + (x - 1)] = diaRulesTop[row - col + (x - 1)].or(diaVarRuleTop);   
+    		diaRulesTop[row - col + x - 1] = diaRulesTop[row - col + x - 1].or(diaVarRuleTop);   
     		diaRulesBottom[row + col] = diaRulesBottom[row + col].or(diaVarRuleBottom);   
     	}   
     	
@@ -119,20 +120,22 @@ public class QueensLogic {
     		diaRulesBottomBDD = diaRulesBottomBDD.and(diaRulesBottom[i]);
     	}
     	
-    	fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesTopBDD).and(diaRulesBottomBDD);
+    	//fullBDD = rowRulesBDD.and(colRulesBDD).and(diaRulesTopBDD).and(diaRulesBottomBDD);
+    	fullBDD = diaRulesBottomBDD;
+    	System.out.println("Existiential BDD is a tautology: " + fullBDD.isOne());
+    	System.out.println("Existiential BDD is unsatisfiable: " + fullBDD.isZero());
     }
     
     private void restrictBDD() {
-    	BDD restriction = null;
+    	BDD restriction = fact.one();
     	for(int i = 0 ; i < x ; i++)
     		for (int j = 0 ; j < x ; j++) {
     			if(board[i][j] == 1) {
-    				restriction = restriction.and(fact.ithVar((i * x) + j));
-    			}
-    			
-    			currentRestriction = restriction;
-    			fullBDD = fullBDD.restrict(restriction);
+    				restriction = restriction.and(fact.ithVar((j * x) + i));
+    			}	
     		}
+    	currentRestriction = restriction;
+		fullBDD = fullBDD.restrict(restriction);
     }
     
     private int[][] calculateValidDomains() {
@@ -155,9 +158,12 @@ public class QueensLogic {
     }
     
     private void updateBoard(int[][] vector) {
+    	changedWhileUpdating = false;
     	for(int i = 0 ; i < x*x ; i++) {
-    		if (vector[i][0] == 1 && vector[i][1] == 0)
-    			board[i % x][(int) Math.floor(i / x)] = 1;
+    		if (vector[i][0] == 1 && vector[i][1] == 0) {
+    			//board[i % x][(int) Math.floor(i / x)] = 1;
+    			changedWhileUpdating = true;
+    		}
     		else if (vector[i][0] == 0 && vector[i][1] == 1)
     			board[i % x][(int) Math.floor(i / x)] = -1;
     	}
@@ -171,6 +177,12 @@ public class QueensLogic {
         board[column][row] = 1;
         restrictBDD();
         updateBoard(calculateValidDomains());
+        
+//        while(changedWhileUpdating)
+//        {
+//        	restrictBDD();
+//            updateBoard(calculateValidDomains());
+//        }
       
         return true;
     }
