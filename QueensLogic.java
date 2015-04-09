@@ -35,7 +35,6 @@ public class QueensLogic {
         
         constructBDD();
         addNQueensRules();
-        restrictBDD();
     }
 
     private void constructBDD() {
